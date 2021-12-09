@@ -20,9 +20,14 @@ void treeWalk(expr *Expression, int depth) {
   }
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    printf("Not enough command line args! Need two, got %d.\n", argc);
+    return -1;
+  }
+  
   printf("Starting.\n");
-  FILE *stream = fopen("test_files/file_test", "r");
+  FILE *stream = fopen(argv[1], "r");
   if (!stream) {
     printf("Error: no such file.\n");
     exit(-1);
