@@ -6,6 +6,7 @@ It uses Lisp notation but its similarities with normal Lisp dialects pretty much
 Some documentation:
 You can compile the code using:
 ```
+mkdir bin # If it's not already there
 make build
 ```
 Then, you can run a Xerxes program using:
