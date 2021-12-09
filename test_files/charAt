@@ -1,0 +1,7 @@
+(function (charAt str n)
+	(slice str n (+ n 1)))
+
+(function (OneByOne str n)
+	(if (= n (len str))
+		(print "Done.\n")
+		(do (print (charAt str n) "\n") (OneByOne str (+ n 1)))))

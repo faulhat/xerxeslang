@@ -1,0 +1,6 @@
+(define a "A")
+(print (Int a) "\n")
+(define b 11)
+(print (String b) "\n")
+(define c 5.1)
+(print (Int c) "\n")

@@ -1,0 +1,7 @@
+(include builtin_lib)
+(macros builtin_lib)
+
+(for (define i 1) (< i 11) (++ i) (do
+  (for (define j 0) (< j i) (++ j)
+    (print j))
+  (print "\n")))

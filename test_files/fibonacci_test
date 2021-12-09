@@ -1,0 +1,16 @@
+(function (Fibonacci a)
+	(define x 0)
+	(if (= a 0)
+		(: x 0)
+		(if (= a 1)
+			(: x 1)
+			(: x (+ (Fibonacci (- a 1)) (Fibonacci (- a 2))))))
+	x)
+
+(function (FirstTenFibonacci a)
+	(print "Fibonacci number #" a " ")
+	(if (= a 10)
+		(print (Fibonacci a) "\n")
+		(do (print (Fibonacci a) "\n") (FirstTenFibonacci (+ a 1)))))
+
+(FirstTenFibonacci 1)

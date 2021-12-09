@@ -1,0 +1,9 @@
+(function (PrintList sequence n)
+	(if (= n (- (len sequence) 1))
+		(print (get sequence n) "\n")
+		(do (print (get sequence n) " ") (PrintList sequence (+ n 1)))))
+
+(define numbers [5 4 3 2 1 0])
+(define Hello "Hello World")
+(PrintList numbers 0)
+(PrintList Hello 0)

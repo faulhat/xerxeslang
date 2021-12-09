@@ -1,0 +1,6 @@
+(define Hello (sprint "Hello" " World\n"))
+(define Numbers (sprint 1.0 " " 2 " " 3.0 " " 4 "\n"))
+(define HelloNumbers (sprint Hello Numbers))
+(print Hello)
+(print Numbers)
+(print HelloNumbers)

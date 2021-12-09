@@ -1,0 +1,4 @@
+(library test_files/charAt characterAt)
+(define Hello "Hello")
+(function (OneByOne) "One by one.")
+(characterAt.OneByOne (OneByOne) 0)

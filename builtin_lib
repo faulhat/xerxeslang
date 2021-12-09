@@ -1,0 +1,80 @@
+{for 4 (do %0 (while %1 (do %3 %2)))}
+
+{++ 1 (: %0 (+ %0 1))}
+
+(function (and a b)
+  (define c 0)
+  (if a
+    (if b
+      (: c 1)))
+  c)
+
+(function (or a b)
+  (define c 0)
+  (if a (: c 1))
+  (if b (: c 1))
+  c)
+
+(function (< a b)
+  (define c 0)
+  (if (not (> a b))
+    (if (not (= a b))
+      (: c 1)))
+  c)
+
+(function (<= a b)
+  (define c 0)
+  (if (not (> a b))
+    (: c 1))
+  c)
+
+(function (>= a b)
+  (define c 0)
+  (if (not (< a b))
+    (: c 1))
+  c)
+
+(function (in element array)
+  (define c 0)
+  (define i 0)
+  (while (< i (len array)) (do
+    (if (= (get array i) element)
+      (: c 1))
+    (: i (+ i 1))))
+  c)
+
+(function (pow base power)
+  (define result 1)
+  (define i 0)
+  (while (< i base) (do
+    (: result (* result base))
+    (: i (+ i 1))))
+  result)
+
+(function (charAt str n)
+  (slice str n (+ n 1)))
+
+(function (Exception msg)
+  (print msg)
+  (exit -1))
+
+(function (strtoi str)
+  (define result 0)
+  (define zero (Int "0"))
+  (define nine (Int "9"))
+  (define i 0)
+  (while (< i (len str)) (do
+    (define digit (charAt str i))
+    (if (or (< (Int digit) zero) (> (Int digit) nine))
+      (Exception "Argument to strtoi must be able to convert to int.\n"))
+    (: result (* result 10))
+    (: result (+ result (- (Int digit) zero)))
+    (: i (+ i 1))))
+  result)
+
+
+
+
+
+
+

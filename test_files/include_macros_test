@@ -1,0 +1,5 @@
+(include builtin_lib)
+(macros builtin_lib)
+
+(for (define i 0) (< i 5) (++ i)
+	(print i "\n"))

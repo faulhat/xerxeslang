@@ -1,0 +1,9 @@
+(define newFile (fopent "MyNewFile.txt" "a"))
+(write newFile "Hello, World!\n")
+(write newFile "My name is Xerxes.\n")
+(writeByte newFile 65)
+(fclose newFile)
+
+(define readFile (fopent "MyNewFile.txt" "r"))
+(print (readDelim readFile (Int " ")) "\n")
+(fclose readFile)
