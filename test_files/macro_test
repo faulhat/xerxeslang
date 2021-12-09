@@ -1,3 +1,8 @@
+"Testing out macro definition"
+"Syntax for macros is basically: {[keyword] [args] [statement]}"
+"And then using the keyword followed by that many args expands to the statement, which can use those args."
+"It's very primitive."
+
 (include builtin_lib)
 
 {for 4 (do %0 (while %1 (do %3 %2)))}

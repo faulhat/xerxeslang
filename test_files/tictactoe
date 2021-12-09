@@ -1,3 +1,5 @@
+"Interactive tictactoe"
+
 (include builtin_lib)
 
 (define board [0 0 0 0 0 0 0 0 0])

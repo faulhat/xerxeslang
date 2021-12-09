@@ -1,3 +1,5 @@
+"You can import a library with a qualifier"
+
 (library test_files/charAt characterAt)
 (define Hello "Hello")
 (function (OneByOne) "One by one.")

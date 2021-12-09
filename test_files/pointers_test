@@ -1,3 +1,5 @@
+"I don't remember why I put pointers in this language."
+
 (define i 35)
 (define i_ptr (address i))
 (define i_retrieved (Int* i_ptr))

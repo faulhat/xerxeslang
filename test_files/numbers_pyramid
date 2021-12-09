@@ -1,3 +1,5 @@
+"Prints a pyramid of numbers"
+
 (include builtin_lib)
 (macros builtin_lib)
 

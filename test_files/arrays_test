@@ -1,3 +1,5 @@
+"Prints each element from a list"
+
 (function (PrintList sequence n)
 	(if (= n (- (len sequence) 1))
 		(print (get sequence n) "\n")
