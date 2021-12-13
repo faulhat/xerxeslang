@@ -1,9 +1,8 @@
 # xerxeslang
 A simple programming language I made back when I was a freshman in HS
 
-It uses Lisp notation but its similarities with normal Lisp dialects pretty much end there.
+It uses Polish notation but its similarities with normal Lisp dialects pretty much end there. It is an interpreted language.
 
-Some documentation:
 You can compile the code using:
 ```
 mkdir bin # If it's not already there
@@ -16,6 +15,7 @@ bin/xerxes [program]
 There are some sample programs in the test_files directory for you to try out!
 
 Language documentation
+
 You define a variable with the syntax:
 ```
 (define a 1)
@@ -25,6 +25,7 @@ You define a function with the syntax:
 (function (a b)
   (/ (+ a b) 2))
 ```
+
 For-loops are pretty easy:
 ```
 "test_files/numbers_pyramid"
@@ -39,6 +40,7 @@ For-loops are pretty easy:
     (print j))
   (print "\n")))
 ```
+
 Note that the "for" construction is actually defined as a macro in builtin_lib, so the `(macros builtin_lib)` directive is necessary.
 
 If-statements are also pretty easy. They work the same way they do in most Lisp dialects, with the syntax:
@@ -47,4 +49,8 @@ If-statements are also pretty easy. They work the same way they do in most Lisp 
   [then]
   [else?])
 ```
+
 There are a whole lot of builtin functions too. You can look through the test_files directory and see them. My personal favorite is tictactoe. You can write your own files too.
+
+TODO
++ Start over and make a good version.
