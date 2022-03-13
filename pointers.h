@@ -1,3 +1,6 @@
+#ifndef POINTERS_H
+#define POINTERS_H
+
 #include "macros.h"
 
 value retriveInt(value);
@@ -11,3 +14,5 @@ value getAddressOf(variable*);
 value retrieveWithCommand(value, char*);
 
 void reassignAddress(value, value);
+
+#endif

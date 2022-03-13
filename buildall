@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ ! -d "bin/" ]; then
+    mkdir bin/
+fi
+
+cc -g -o bin/xerxes file_open.c macros.c main.c pointers.c parse.c

@@ -1,4 +1,7 @@
-#include "proto_2.h"
+#ifndef MACROS_H
+#define MACROS_H
+
+#include "parse.h"
 
 expr replaceMacroInstances(expr*, char*, int, expr, int, int*);
 
@@ -16,3 +19,5 @@ typedef struct macroArray {
 void appendMacroArray(macroArray*, macro_t);
 
 void postParser(expr*, macroArray);
+
+#endif

@@ -1,25 +1,31 @@
+#ifndef PARSE_H
+#define PARSE_H
+
+#include <stdio.h>
 #include <stdint.h>
 
 // Labels for types of expressions. List types are multiples of 10, so that 
 // whether something is a list or an atom can be tested by using the modulus function.
-#define ATOM 1
-#define LIST 10
-#define INT 2
-#define FLOAT 3
-#define STRING 4
-#define SEXPR 20
-#define MODULE 30
-#define FUNCTION 40
-#define ARRAY 50
-#define COMMENT 99
-#define LIBRARY 5
-#define MACRO 60
-#define ADDRESS 6
-#define SYS_FILE 7
+typedef enum {
+  ATOM,
+  LIST,
+  INT,
+  FLOAT,
+  STRING,
+  SEXPR,
+  MODULE,
+  FUNCTION,
+  ARRAY,
+  COMMENT,
+  LIBRARY,
+  MACRO,
+  ADDRESS,
+  SYS_FILE
+} label_t;
 
 // A structure for storing expressions and expression trees.
 typedef struct expr {
-  int label; // What kind of expression is this (list or atom)?
+  label_t label; // What kind of expression is this (list or atom)?
   int length; // The number of nested expressions this list contains (if it is a list).
   char *atom; // The contents of the atom.
   struct expr *sub; // The expressions within this list.
@@ -27,14 +33,14 @@ typedef struct expr {
 
 expr initExpr(int);
 
-expr *getExpr(expr*, int);
+expr *getExpr(expr *, int);
 
 typedef struct macroArray macroArray; // Forward declaration
-expr parse(char*, int, int, int*, macroArray*);
+expr parse(char *, int, int, int *, macroArray *);
 
-expr fullParse(char*, int, int, int*);
+expr fullParse(char *, int, int, int*);
 
-void appendExpr(expr*, expr);
+void appendExpr(expr *, expr);
 
 union generic {
   int Integer;
@@ -62,13 +68,14 @@ typedef struct function {
   int argumentNumber;
 } function;
 
-typedef struct map map; // Forward declaration
+typedef struct map map;
 
 union thing {
   value Value;
   function Function;
-  map *Library; // A pointer is used here since the type is incomplete
+  map *Library;
 };
+
 // Variable structure, containing a name, hash,
 // and either a value or function.
 // Libraries are also stored with this structure.
@@ -102,7 +109,4 @@ scopes initScopes(void);
 
 value execExprList(expr*, variable*, int, scopes, map*);
 
-
-
-
-
+#endif
