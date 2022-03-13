@@ -1,18 +1,25 @@
 # xerxeslang
+Update (03/12/22): I've returned to this project three years later to fix past me's code. The original version which I wrote in 2019 is on the ["original" branch.](https://github.com/tafaulhaber590/xerxeslang/tree/original)
+
+Is there even anyone else here?
+
+
+# Xerxes: Not really Lisp
 A simple programming language I made back when I was a freshman in HS
 
 It uses Polish notation but its similarities with normal Lisp dialects pretty much end there. It is an interpreted language.
 
 You can compile the code using:
 ```
-mkdir bin # If it's not already there
-make build
+./buildall
 ```
+
 Then, you can run a Xerxes program using:
 ```
 bin/xerxes [program]
 ```
-There are some sample programs in the test_files directory for you to try out!
+
+There are some sample programs in the test_files directory for you to try out! My personal favorite is tictactoe.
 
 Language documentation
 
@@ -50,7 +57,9 @@ If-statements are also pretty easy. They work the same way they do in most Lisp 
   [else?])
 ```
 
-There are a whole lot of builtin functions too. You can look through the test_files directory and see them. My personal favorite is tictactoe. You can write your own files too.
-
-TODO
-+ Start over and make a good version.
+# TODO
++ Namespaces
++ Put the code in parse.c into different files because it is too long
++ Allow system calls to be made from xerxes code
++ Implement CLOS
++ Fix scoping
