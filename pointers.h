@@ -1,7 +1,7 @@
 #ifndef POINTERS_H
 #define POINTERS_H
 
-#include "macros.h"
+#include "interpret.h"
 
 value retriveInt(value);
 

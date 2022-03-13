@@ -3,7 +3,7 @@
 
 #include "parse.h"
 
-expr replaceMacroInstances(expr*, char*, int, expr, int, int*);
+expr replaceMacroInstances(expr*, char*, int, expr, label_t, int*);
 
 typedef struct macro_s {
 	char *keyword;
