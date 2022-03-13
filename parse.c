@@ -51,6 +51,7 @@ expr assignAtom(char* contents, int length)
     bool isInt = true;
     bool isFloat = false;
     Expression.atom = (char *) malloc((length + 1) * sizeof(char));
+    Expression.atom[length] = 0; // Ensure null-termination
     for (int i = 0; i < length; ++i) {
         *(Expression.atom + i) = *(contents + i);
         if (('0' > *(contents + i) || *(contents + i) > '9') && !(*(contents + i) == '-' && i == 0)) {

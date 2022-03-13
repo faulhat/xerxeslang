@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    printf("Starting.\n");
     FILE *stream = fopen(argv[1], "r");
     if (!stream) {
         printf("Error: no such file.\n");
@@ -40,13 +39,13 @@ int main(int argc, char *argv[])
     char *buffer = NULL;
     size_t len = 0;
     ssize_t bytes_read = getdelim(&buffer, &len, -1, stream);
-    printf("File buffer loaded %zd bytes.\n", bytes_read);
+
     int end = 0;
     expr parsedProgram = fullParse(buffer, strlen(buffer), MODULE, &end);
-    printf("MAIN: \n");
+
     free(buffer);
     scopes mainScopeStack = initScopes();
     value programEval = execExprList(&parsedProgram, NULL, 0, mainScopeStack, NULL);
-    printf("Program completed successfully.\n");
+    
     return 0;
 }

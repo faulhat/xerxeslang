@@ -9,155 +9,11 @@
 #include "file_open.h"
 #include "pointers.h"
 #include "macros.h"
+#include "map.h"
+
+const uint32_t MAP_INIT_HASHLEN = 6;
 
 // Interpreter (Prototype 2, can handle multiple types)
-
-// These "init" functions set all values in a struct to zero
-value initValue()
-{
-    value newVal;
-    newVal.type = 0;
-    newVal.Gen.LongInt = 0;
-    newVal.arrayLength = 0;
-    newVal.Array = NULL;
-    return newVal;
-}
-
-function initFunction()
-{
-    function newFunc;
-    newFunc.body = initExpr(FUNCTION);
-    newFunc.argumentNames = NULL;
-    newFunc.argumentNumber = 0;
-    return newFunc;
-}
-
-variable initVariable()
-{
-    variable newVar;
-    newVar.name = NULL;
-    newVar.hash = 0;
-    newVar.Var.Value = initValue();
-    return newVar;
-}
-
-map initMap(int hashLen)
-{
-    map newMap;
-    newMap.hashLength = hashLen;
-    newMap.totalBuckets = 1 << hashLen;
-    newMap.usedBuckets = 0;
-    newMap.Buckets = (bucket *) calloc(newMap.totalBuckets, sizeof(bucket));
-    for (int i = 0; i < newMap.totalBuckets; ++i) {
-        (newMap.Buckets + i)->length = 0;
-        (newMap.Buckets + i)->contents = NULL;
-    }
-    return newMap;
-}
-
-scopes initScopes()
-{
-    scopes newStack;
-    newStack.depth = 0;
-    newStack.stack = NULL;
-    return newStack;
-}
-
-uint32_t hashName(char *name)
-{
-    // Produce a hash for name
-    uint32_t hash = 0;
-    for (int i = 0; i < strlen(name); i++) {
-        hash *= 11; // Multiply hash by a constant
-        hash += name[i]; // Add the next character's value
-    }
-
-    return hash;
-}
-
-bucket addToBucket(bucket *target, variable newContent)
-{
-    // Adds a variable to a bucket and returns the result.
-    // New contents with the same name as old contents overwrites the old contents.
-    bucket newBucket;
-    for (int i = 0; i < target->length; ++i) {
-        if (strcmp((target->contents + i)->name, newContent.name) == 0) {
-            newBucket.contents = (variable *) malloc(target->length * sizeof(variable));
-            memcpy(newBucket.contents, target->contents, target->length * sizeof(variable));
-            *(newBucket.contents + i) = newContent;
-            return newBucket;
-        }
-    }
-
-    newBucket.length = target->length + 1;
-    newBucket.contents = (variable *) malloc(newBucket.length * sizeof(variable));
-    memcpy(newBucket.contents, target->contents, target->length * sizeof(variable));
-    *(newBucket.contents + newBucket.length - 1) = newContent;
-
-    return newBucket;
-}
-
-void reorganize(map *target, int newHashLength)
-{
-    // Reorganizes a hash table into one of a different hash length.
-    map temp = initMap(newHashLength);
-    uint32_t mask = 0;
-    mask = ~mask >> (32 - newHashLength);
-    for (int i = 0; i < target->totalBuckets; ++i) {
-        bucket thisBucket = *(target->Buckets + i);
-        for (int j = 0; j < thisBucket.length; ++j) {
-            variable content = *(thisBucket.contents + j);
-            *(temp.Buckets + (content.hash & mask)) = addToBucket(temp.Buckets + (content.hash & mask), content);
-        }
-    }
-
-    *target = temp;
-}
-
-void newVariable(map *destination, variable item)
-{
-    // Adds a new variable to a hash table, expanding the table if necessary.
-    if (destination->usedBuckets > 7 * destination->totalBuckets / 8) {
-        reorganize(destination, destination->hashLength + 1);
-    }
-    uint32_t mask = 0;
-    mask = ~mask >> (32 - destination->hashLength);
-    item.hash = hashName(item.name);
-    *(destination->Buckets + (item.hash & mask)) = addToBucket(destination->Buckets + (item.hash & mask), item);
-}
-
-scopes plusScope(scopes currentStack, map newScope)
-{
-    // Adds a new scope to the stack of scopes.
-    scopes newStack;
-    newStack.depth = currentStack.depth + 1;
-    newStack.stack = (map *) calloc(newStack.depth, sizeof(map));
-    *(newStack.stack) = newScope;
-    for (int i = 1; i < newStack.depth; ++i) {
-        memcpy(newStack.stack + i, currentStack.stack + i - 1, sizeof(map));
-    }
-    return newStack;
-}
-
-variable *getVariable(scopes currentStack, char *key)
-{
-    // Gets a variable from a stack of maps.
-    for (int i = 0; i < currentStack.depth; ++i) {
-        map thisScope = *(currentStack.stack + i);
-        uint32_t mask = 0;
-        mask = ~mask >> (32 - thisScope.hashLength);
-        int keyHash = hashName(key) & mask;
-        bucket keyHashBucket = *(thisScope.Buckets + keyHash);
-        for (int j = 0; j < keyHashBucket.length; ++j) {
-            if (strcmp((keyHashBucket.contents + j)->name, key) == 0) {
-                return keyHashBucket.contents + j;
-            }
-        }
-    }
-
-    printf("Name Error: %s not found.\n", key);
-    exit(-1);
-}
 
 value typecast(value source, char *cast)
 {
@@ -241,15 +97,11 @@ int getPrefix(char *source)
 variable *getVariableFromLibrary(map *library, char *key)
 {
     // Gets a variable straight from a hash table.
-    uint32_t mask = 0;
-    mask = ~mask >> (32 - library->hashLength);
-    int keyHash = hashName(key) & mask;
-    bucket keyHashBucket = *(library->Buckets + keyHash);
-    for (int j = 0; j < keyHashBucket.length; ++j) {
-        if (strcmp((keyHashBucket.contents + j)->name, key) == 0) {
-            return keyHashBucket.contents + j;
-        }
+    variable *var_ptr = mapGet(library, key);
+    if (var_ptr) {
+        return var_ptr;
     }
+
     printf("Error: variable %s not found (in library).\n", key);
     exit(-1);
 }
@@ -767,15 +619,18 @@ value execute(expr *Expression, scopes currentStack)
                 thisFunction = *getVariable(currentStack, fullname);
                 funcScopes = currentStack;
             }
+
             if (thisFunction.Var.Function.argumentNumber != Expression->length - 1) {
                 printf("Error: Incorrect number of arguments for %s.\n", thisFunction.name);
                 exit(-1);
             }
+
             variable *arguments = (variable *) calloc(thisFunction.Var.Function.argumentNumber, sizeof(variable));
             for (int j = 0; j < Expression->length - 1; ++j) {
                 (arguments + j)->name = *(thisFunction.Var.Function.argumentNames + j);
                 (arguments + j)->Var.Value = execute(getExpr(Expression, j + 1), currentStack);
             }
+            
             return execExprList(&(thisFunction.Var.Function.body), arguments, thisFunction.Var.Function.argumentNumber, funcScopes, NULL);
         }
     }
@@ -787,7 +642,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
 {
     // Executes lists of s-expressions and atoms, such as modules and functions.
     scopes *currentStack = (scopes *) calloc(allHigherScopes.depth + 1, sizeof(scopes));
-    *currentStack = plusScope(allHigherScopes, initMap(6));
+    *currentStack = plusScope(allHigherScopes, initMap());
     for (int i = 0; i < numberOfArguments; ++i) {
         newVariable((currentStack->stack), *(arguments + i));
     }
@@ -935,21 +790,22 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                     printf("include: Error: no such file.\n");
                     exit(-1);
                 }
+
                 char *buffer = NULL;
                 size_t len = 0;
                 ssize_t bytes_read = getdelim(&buffer, &len, -1, stream);
                 printf("include: Bytes read: %zd.\n", bytes_read);
                 int end = 0;
-                expr header = fullParse(buffer, strlen(buffer), MODULE, &end);
+                expr included = fullParse(buffer, strlen(buffer), MODULE, &end);
                 free(buffer);
-                scopes mainScopes = initScopes();
-                map *headerSymbols = (map *) malloc(sizeof(map));
-                execExprList(&header, NULL, 0, mainScopes, headerSymbols);
-                for (int j = 0; j < headerSymbols->totalBuckets; ++j) {
-                    bucket thisBucket = *(headerSymbols->Buckets + j);
+
+                map *includedSymbols = (map *) malloc(sizeof(map));
+                execExprList(&included, NULL, 0, initScopes(), includedSymbols);
+                for (int j = 0; j < includedSymbols->totalBuckets; ++j) {
+                    bucket thisBucket = *(includedSymbols->Buckets + j);
                     for (int k = 0; k < thisBucket.length; ++k) {
                         variable newItem = *(thisBucket.contents + k);
-                        newItem.name = (char *) calloc(strlen(getExpr(exprI, 1)->atom) + 2 + strlen((thisBucket.contents + k)->name), sizeof(char));
+                        newItem.name = (char *) malloc(strlen((getExpr(exprI, 1)->atom) + 2 + strlen((thisBucket.contents + k)->name)) * sizeof(char));
                         sprintf(newItem.name, "%s", (thisBucket.contents + k)->name);
                         newVariable(currentStack->stack, newItem);
                     }
@@ -976,7 +832,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
         }
     }
     if (ExportTo && exprList->label == MODULE) {
-        *ExportTo = initMap(6);
+        *ExportTo = initMap();
         for (int i = 0; i < currentStack->stack->totalBuckets; ++i) {
             bucket thisBucket = *(currentStack->stack->Buckets + i);
             for (int j = 0; j < thisBucket.length; ++j) {
