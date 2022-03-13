@@ -60,21 +60,13 @@
 
 (function (strtoi str)
   (define result 0)
-  (define zero (Int "0"))
-  (define nine (Int "9"))
-  (define i 0)
-  (while (< i (len str)) (do
-    (define digit (charAt str i))
-    (if (or (< (Int digit) zero) (> (Int digit) nine))
+  (define zero (ord "0"))
+  (for (define i 0) (< i (len str)) (++ i) (do
+    (define digit (- (ord (charAt str i)) zero))
+    (if (or (< digit 0) (> digit 9))
       (Exception "Argument to strtoi must be able to convert to int.\n"))
+
     (: result (* result 10))
-    (: result (+ result (- (Int digit) zero)))
-    (: i (+ i 1))))
+    (: result (+ result digit))))
+
   result)
-
-
-
-
-
-
-

@@ -46,6 +46,6 @@ int main(int argc, char *argv[])
     free(buffer);
     scopes mainScopeStack = initScopes();
     value programEval = execExprList(&parsedProgram, NULL, 0, mainScopeStack, NULL);
-    
+
     return 0;
 }

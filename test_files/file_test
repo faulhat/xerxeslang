@@ -5,5 +5,5 @@
 (fclose newFile)
 
 (define readFile (fopent "MyNewFile.txt" "r"))
-(print (readDelim readFile (Int " ")) "\n")
+(print (readDelim readFile (ord " ")) "\n")
 (fclose readFile)

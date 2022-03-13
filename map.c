@@ -85,7 +85,7 @@ bucket addToBucket(bucket *target, variable newContent)
     newBucket.length = target->length + 1;
     newBucket.contents = (variable *) malloc(newBucket.length * sizeof(variable));
     memcpy(newBucket.contents, target->contents, target->length * sizeof(variable));
-    *(newBucket.contents + newBucket.length - 1) = newContent;
+    newBucket.contents[newBucket.length - 1] = newContent;
 
     return newBucket;
 }
@@ -125,7 +125,7 @@ scopes plusScope(scopes currentStack, map newScope)
     // Adds a new scope to the stack of scopes.
     scopes newStack;
     newStack.depth = currentStack.depth + 1;
-    newStack.stack = (map *) calloc(newStack.depth, sizeof(map));
+    newStack.stack = (map *) malloc(newStack.depth * sizeof(map));
     *(newStack.stack) = newScope;
     for (int i = 1; i < newStack.depth; ++i) {
         memcpy(newStack.stack + i, currentStack.stack + i - 1, sizeof(map));

@@ -45,15 +45,14 @@
 
 (define turn 0)
 (define done 0)
-(define zero (Int "0"))
 (define symbols ["+" "X" "O"])
 (while (not done) (do
 	(print "Turn " turn "\n")
   (printBoard board)
 	(define move (input "What is your move? "))
 	(if (= (len move) 2) (do
-		(define x (- (Int (slice move 0 1)) zero))
-		(define y (- (Int (slice move 1 2)) zero))
+		(define x (- (strtoi (slice move 0 1))))
+		(define y (- (strtoi (slice move 1 2))))
 		(define illegal 0)
 		(if (or (or (or (> x 2) (> y 2)) (< x 0)) (< y 0)) (: illegal 1))
 		(if (not illegal)

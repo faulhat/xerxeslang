@@ -17,15 +17,17 @@ expr deepCopy(expr *code, label_t label)
 {
     expr newExpr = initExpr(label);
     for (int i = 0; i < code->length; ++i) {
-        if ((code->sub + i)->label != ATOM && (code->sub + i)->label != INT && (code->sub + i)->label != FLOAT) {
-            appendExpr(&newExpr, deepCopy(code->sub + i, (code->sub + i)->label));
+        label_t label = code->sub[i].label;
+        if (label != ATOM && label != INT && label != FLOAT) {
+            appendExpr(&newExpr, deepCopy(code->sub + i, label));
         }
         else {
-            appendExpr(&newExpr, initExpr((code->sub + i)->label));
-            (newExpr.sub + i)->atom = (char *) calloc(strlen((code->sub + i)->atom) + 1, sizeof(char));
-            memcpy((newExpr.sub + i)->atom, (code->sub + i)->atom, strlen((code->sub + i)->atom));
+            appendExpr(&newExpr, initExpr(label));
+            newExpr.sub[i].atom = (char *) malloc((strlen(code->sub[i].atom) + 1) * sizeof(char));
+            strcpy(newExpr.sub[i].atom, code->sub[i].atom);
         }
     }
+    
     return newExpr;
 }
 
@@ -51,29 +53,32 @@ expr replaceMacroInstances(expr *code, char *macroFind, int macroExprs, expr mac
 {
     *instances = 0;
     expr newCode = initExpr(label);
-    expr *replacementCode = (expr *) calloc(1, sizeof(expr));
-    for (int i = 0; i < code->length; ++i) {
-        expr thisExpr = *(code->sub + i);
+    expr *replacementCode = (expr *) malloc(sizeof(expr));
+    for (int i = 0; i < code->length; i++) {
+        expr thisExpr = code->sub[i];
         if (thisExpr.label != SEXPR) {
             appendExpr(&newCode, thisExpr);
             continue;
         }
+
         if (strcmp((thisExpr.sub)->atom, macroFind) == 0) {
             *replacementCode = deepCopy(&macroReplace, macroReplace.label);
             for (int k = 0; k < macroExprs; ++k) {
                 char *exprISign = (char *) calloc(20, sizeof(char));
-                *exprISign = '%';
+                exprISign[0] = '%';
                 sprintf(exprISign + 1, "%d", k);
                 expr exprI = *getExprMac(&thisExpr, k + 1, macroFind);
                 findAndReplace(replacementCode, exprISign, exprI);
             }
-            ++(*instances);
+            
+            (*instances)++;
             appendExpr(&newCode, *replacementCode);
         }
         else {
             appendExpr(&newCode, replaceMacroInstances(&thisExpr, macroFind, macroExprs, macroReplace, SEXPR, instances));
         }
     }
+
     return newCode;
 }
 

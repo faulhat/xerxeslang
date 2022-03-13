@@ -80,7 +80,7 @@ void writeToFile(value file, value material)
 
 void writeToFileInt(value file, value material)
 {
-    char *thisInt = (char *) calloc(1, sizeof(char));
+    char *thisInt = (char *) malloc(sizeof(char));
     *thisInt = material.Gen.Integer;
     int fileWrite = fputs(thisInt, file.Gen.filestream);
     if (fileWrite < 0) {
@@ -91,12 +91,12 @@ void writeToFileInt(value file, value material)
 
 value readFromFile(value file, value n)
 {
-    char *buffer = (char *) calloc(n.Gen.Integer + 1, sizeof(char));
+    char *buffer = (char *) malloc(n.Gen.Integer * sizeof(char));
     fgets(buffer, n.Gen.Integer, file.Gen.filestream);
     value returnVal = initValue();
     returnVal.type = STRING;
-    returnVal.Gen.String = (char *) calloc(strlen(buffer) + 1, sizeof(char));
-    memcpy(returnVal.Gen.String, buffer, strlen(buffer));
+    returnVal.Gen.String = (char *) malloc((strlen(buffer) + 1) * sizeof(char));
+    strcpy(returnVal.Gen.String, buffer);
     return returnVal;
 }
 
@@ -105,10 +105,9 @@ value readFromFileDelim(value file, value delimiter)
     char *buffer = NULL;
     size_t len = 0;
     ssize_t bytes_read = getdelim(&buffer, &len, delimiter.Gen.Integer, file.Gen.filestream);
-    printf("readFromFile read %zd bytes.\n", bytes_read);
+    
     value returnVal = initValue();
     returnVal.type = STRING;
-    returnVal.Gen.String = (char *) calloc(strlen(buffer) + 1, sizeof(char));
-    memcpy(returnVal.Gen.String, buffer, strlen(buffer));
+    returnVal.Gen.String = buffer;
     return returnVal;
 }
