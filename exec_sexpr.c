@@ -236,7 +236,7 @@ value execSexpr(expr *Expression, scopes currentStack)
         returnVal.arrayLength = source.arrayLength + 1;
         returnVal.Array = (value *) malloc(returnVal.arrayLength * sizeof(value));
         memcpy(returnVal.Array, source.Array, source.arrayLength * sizeof(value));
-        *(returnVal.Array + returnVal.arrayLength - 1) = execute(getExpr(Expression, 2), currentStack);
+        returnVal.Array[returnVal.arrayLength - 1] = execute(getExpr(Expression, 2), currentStack);
         return returnVal;
     }
     else if (strcmp(first, "slice") == 0) {
@@ -316,8 +316,13 @@ value execSexpr(expr *Expression, scopes currentStack)
             else if (thisArg.type == ADDRESS) {
                 sprintf(thisStr.Gen.String, "%p", (void *) thisArg.Gen.LongInt);
             }
-            newString.Gen.String = (char *) realloc(newString.Gen.String, (strlen(newString.Gen.String) + strlen(thisStr.Gen.String)) * sizeof(char));
+
+            char *oldContents = newString.Gen.String;
+            newString.Gen.String = (char *) malloc((strlen(newString.Gen.String) + strlen(thisStr.Gen.String) + 1) * sizeof(char));
+            strcpy(newString.Gen.String, oldContents);
+            free(oldContents);
             strcat(newString.Gen.String, thisStr.Gen.String);
+            free(thisStr.Gen.String);
         }
         return newString;
     }
@@ -434,11 +439,13 @@ value execSexpr(expr *Expression, scopes currentStack)
 
         variable *arguments = (variable *) malloc(thisFunction.Var.Function.argumentNumber * sizeof(variable));
         for (int j = 0; j < Expression->length - 1; ++j) {
-            (arguments + j)->name = *(thisFunction.Var.Function.argumentNames + j);
-            (arguments + j)->Var.Value = execute(getExpr(Expression, j + 1), currentStack);
+            arguments[j].name = *(thisFunction.Var.Function.argumentNames + j);
+            arguments[j].Var.Value = execute(getExpr(Expression, j + 1), currentStack);
         }
 
-        return execExprList(&(thisFunction.Var.Function.body), arguments, thisFunction.Var.Function.argumentNumber, funcScopes, NULL);
+        value returnVal = execExprList(&(thisFunction.Var.Function.body), arguments, thisFunction.Var.Function.argumentNumber, funcScopes, NULL);
+        free(arguments);
+        return returnVal;
     }
 
     return initValue();

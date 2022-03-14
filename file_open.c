@@ -87,6 +87,8 @@ void writeToFileInt(value file, value material)
         printf("write: Error: Failed to write to file.\n");
         exit(-1);
     }
+
+    free(thisInt);
 }
 
 value readFromFile(value file, value n)
@@ -97,6 +99,8 @@ value readFromFile(value file, value n)
     returnVal.type = STRING;
     returnVal.Gen.String = (char *) malloc((strlen(buffer) + 1) * sizeof(char));
     strcpy(returnVal.Gen.String, buffer);
+    free(buffer);
+    
     return returnVal;
 }
 

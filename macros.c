@@ -34,13 +34,14 @@ expr deepCopy(expr *code, label_t label)
 void findAndReplace(expr *code, char *atomFind, expr replacement)
 {
     for (int i = 0; i < code->length; ++i) {
-        expr thisExpr = *(code->sub + i);
+        expr thisExpr = code->sub[i];
         if (thisExpr.label == MACRO) {
             continue;
         }
+
         if (thisExpr.label == ATOM) {
             if (strcmp(thisExpr.atom, atomFind) == 0) {
-                *(code->sub + i) = replacement;
+                code->sub[i] = replacement;
             }
         }
         else if (thisExpr.label != INT && thisExpr.label != FLOAT) {

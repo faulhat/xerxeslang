@@ -36,6 +36,7 @@ void inc_capacity(smart_str_t *buf)
     char *tmp = buf->contents;
     buf->contents = (char *) malloc((buf->capacity + 1) * sizeof(char));
     strcpy(buf->contents, tmp);
+    free(tmp);
 }
 
 // Append a char to the contents buffer

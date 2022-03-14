@@ -40,9 +40,8 @@ value typecast(value source, char *cast)
         }
         else if (strcmp(cast, "String") == 0) {
             returnVal.type = STRING;
-            char *buffer = (char *) malloc(20 * sizeof(char));
-            sprintf(buffer, "%d", source.Gen.Integer);
-            returnVal.Gen.String = buffer;
+            returnVal.Gen.String = (char *) malloc(20 * sizeof(char));
+            sprintf(returnVal.Gen.String, "%d", source.Gen.Integer);
             return returnVal;
         }
     }
@@ -57,9 +56,8 @@ value typecast(value source, char *cast)
         }
         else if (strcmp(cast, "String") == 0) {
             returnVal.type = STRING;
-            char *buffer = (char *) malloc(40 * sizeof(char));
-            sprintf(buffer, "%f", source.Gen.Float);
-            returnVal.Gen.String = buffer;
+            returnVal.Gen.String = (char *) malloc(40 * sizeof(char));
+            sprintf(returnVal.Gen.String, "%f", source.Gen.Float);
             return returnVal;
         }
     }
@@ -203,7 +201,7 @@ value execute(expr *Expression, scopes currentStack)
         returnVal.type = ARRAY;
         returnVal.Array = (value *) malloc(Expression->length * sizeof(value));
         for (int i = 0; i < Expression->length; ++i) {
-            *(returnVal.Array + i) = execute(getExpr(Expression, i), currentStack);
+            returnVal.Array[i] = execute(getExpr(Expression, i), currentStack);
             ++(returnVal.arrayLength);
         }
         return returnVal;
@@ -401,6 +399,8 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                 int end = 0;
                 parse(buffer, strlen(buffer), MODULE, &end, thisMacroArray);
                 postParser(exprList, *thisMacroArray);
+
+                free(thisMacroArray);
             }
             else {
                 lineValue = execute(exprI, *currentStack);
