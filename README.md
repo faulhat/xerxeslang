@@ -1,7 +1,7 @@
 # xerxeslang
 Update (03/12/22): I've returned to this project three years later to fix past me's code. The original version which I wrote in 2019 is on the ["original" branch.](https://github.com/tafaulhaber590/xerxeslang/tree/original)
 
-Is there even anyone else here?
+Update (03/18/22): I realized that this program leaks so much memory it's basically malware. In order to fix it, I'd have to implement a garbage collector, which would be complicated and not worth it.
 
 
 # Xerxes: Not really Lisp
