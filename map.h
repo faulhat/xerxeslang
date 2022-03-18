@@ -75,6 +75,8 @@ typedef struct {
 
 scopes initScopes(void);
 
+void delMapContents(map);
+
 variable *mapGet(map *, char *);
 
 void newVariable(map *, variable);

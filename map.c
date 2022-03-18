@@ -40,9 +40,9 @@ map initMap()
     newMap.totalBuckets = 1 << MAP_INIT_HASHLEN;
     newMap.usedBuckets = 0;
     newMap.Buckets = (bucket *) malloc(newMap.totalBuckets * sizeof(bucket));
-    for (int i = 0; i < newMap.totalBuckets; ++i) {
-        (newMap.Buckets + i)->length = 0;
-        (newMap.Buckets + i)->contents = NULL;
+    for (int i = 0; i < newMap.totalBuckets; i++) {
+        newMap.Buckets[i].length = 0;
+        newMap.Buckets[i].contents = NULL;
     }
 
     return newMap;
@@ -54,6 +54,17 @@ scopes initScopes()
     newStack.depth = 0;
     newStack.stack = NULL;
     return newStack;
+}
+
+void delMapContents(map toDel)
+{
+    for (int i = 0; i < toDel.totalBuckets; i++) {
+        bucket *thisBucket = toDel.Buckets + i;
+        if (thisBucket->contents)
+            free(thisBucket->contents);
+    }
+
+    free(toDel.Buckets);
 }
 
 uint32_t hashName(char *name)

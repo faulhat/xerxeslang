@@ -7,7 +7,7 @@
 #include "parse.h"
 #include "map.h"
 
-int getPrefix(char *);
+char *getPrefix(char *);
 
 value typecast(value, char *);
 

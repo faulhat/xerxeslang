@@ -5,7 +5,7 @@
 
 expr replaceMacroInstances(expr*, char*, int, expr, label_t, int*);
 
-typedef struct macro_s {
+typedef struct {
     char *keyword;
     int exprNumber;
     expr replacement;
@@ -16,8 +16,12 @@ typedef struct macroArray {
     macro_t *Array;
 } macroArray;
 
+macroArray *newMacroArray();
+
 void appendMacroArray(macroArray*, macro_t);
 
 void postParser(expr*, macroArray);
+
+void macrosDelAll(macroArray *);
 
 #endif

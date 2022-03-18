@@ -65,16 +65,20 @@ value typecast(value source, char *cast)
     exit(-1);
 }
 
-int getPrefix(char *source)
+char *getPrefix(char *source)
 {
     // Finds everything in a name up to a dot.
-    // Returns the number of characters before that dot.
-    for (int i = 0; i < strlen(source); ++i) {
-        if (*(source + i) == '.') {
-            return i;
+    for (int i = 0; i < strlen(source); i++) {
+        if (source[i] == '.') {
+            char *prefix = (char *) malloc((i + 1) * sizeof(char));
+            prefix[i] = '\0';
+            memcpy(prefix, source, i);
+
+            return prefix;
         }
     }
-    return 0; // Returns 0 if no dot is found.
+
+    return NULL;
 }
 
 value bitwiseWithCommand(value valueOperand1, value valueOperand2, char *command)
@@ -217,10 +221,9 @@ value execute(expr *Expression, scopes currentStack)
 value execExprList(expr *exprList, variable *arguments, int numberOfArguments, scopes allHigherScopes, map *ExportTo)
 {
     // Executes lists of s-expressions and atoms, such as modules and functions.
-    scopes *currentStack = (scopes *) malloc((allHigherScopes.depth + 1) * sizeof(scopes));
-    *currentStack = plusScope(allHigherScopes, initMap());
+    scopes currentStack = plusScope(allHigherScopes, initMap());
     for (int i = 0; i < numberOfArguments; ++i) {
-        newVariable((currentStack->stack), *(arguments + i));
+        newVariable((currentStack.stack), *(arguments + i));
     }
     expr *exprI = (expr *) malloc(sizeof(expr));
     expr *first = (expr *) malloc(sizeof(expr));
@@ -228,7 +231,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
     for (int i = 0; i < exprList->length; ++i) {
         *exprI = *getExpr(exprList, i);
         if (exprI->label == ATOM || exprI->label == INT || exprI->label == FLOAT || exprI->label == STRING) {
-            lineValue = execute(exprI, *currentStack);
+            lineValue = execute(exprI, currentStack);
         }
         else if (exprI->label == SEXPR) {
             *first = *getExpr(exprI, 0);
@@ -239,8 +242,8 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                     exit(-1);
                 }
                 newDefinition.name = getExpr(exprI, 1)->atom;
-                newDefinition.Var.Value = execute(getExpr(exprI, 2), *currentStack);
-                newVariable(currentStack->stack, newDefinition);
+                newDefinition.Var.Value = execute(getExpr(exprI, 2), currentStack);
+                newVariable(currentStack.stack, newDefinition);
                 lineValue = initValue();
             }
             else if (strcmp(first->atom, ":") == 0) {
@@ -248,13 +251,13 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                     if (getExpr(exprI, 1)->label == SEXPR) {
                         if (strcmp(getExpr(getExpr(exprI, 1), 0)->atom, "get") == 0) {
                             char *targetArrayName = getExpr(getExpr(exprI, 1), 1)->atom;
-                            value targetArray = getVariable(*currentStack, targetArrayName)->Var.Value;
-                            value n = execute(getExpr(getExpr(exprI, 1), 2), *currentStack);
+                            value targetArray = getVariable(currentStack, targetArrayName)->Var.Value;
+                            value n = execute(getExpr(getExpr(exprI, 1), 2), currentStack);
                             if (targetArray.type == ARRAY) {
-                                *(targetArray.Array + n.Gen.Integer) = execute(getExpr(exprI, 2), *currentStack);
+                                *(targetArray.Array + n.Gen.Integer) = execute(getExpr(exprI, 2), currentStack);
                             }
                             else if (targetArray.type == STRING) {
-                                *(targetArray.Gen.String + n.Gen.Integer) = *(execute(getExpr(exprI, 2), *currentStack).Gen.String);
+                                *(targetArray.Gen.String + n.Gen.Integer) = *(execute(getExpr(exprI, 2), currentStack).Gen.String);
                             }
                         }
                         else {
@@ -269,7 +272,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                 }
                 else {
                     char *targetVar = getExpr(exprI, 1)->atom;
-                    getVariable(*currentStack, targetVar)->Var.Value = execute(getExpr(exprI, 2), *currentStack);
+                    getVariable(currentStack, targetVar)->Var.Value = execute(getExpr(exprI, 2), currentStack);
                 }
                 lineValue = initValue();
             }
@@ -294,20 +297,20 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                 for (int j = 2; j < exprI->length; ++j) {
                     appendExpr(&(newFunction.Var.Function.body), *getExpr(exprI, j));
                 }
-                newVariable(currentStack->stack, newFunction);
+                newVariable(currentStack.stack, newFunction);
                 lineValue = initValue();
             }
             else if (strcmp(first->atom, "if") == 0) {
-                if (execute(getExpr(exprI, 1), *currentStack).Gen.Integer != 0 || execute(getExpr(exprI, 1), *currentStack).Gen.Float != 0.0) {
+                if (execute(getExpr(exprI, 1), currentStack).Gen.Integer != 0 || execute(getExpr(exprI, 1), currentStack).Gen.Float != 0.0) {
                     expr iftrue = initExpr(SEXPR);
                     appendExpr(&iftrue, *getExpr(exprI, 2));
-                    lineValue = execExprList(&iftrue, NULL, 0, *currentStack, NULL);
+                    lineValue = execExprList(&iftrue, NULL, 0, currentStack, NULL);
                 }
                 else {
                     if (exprI->length == 4) {
                         expr iffalse = initExpr(SEXPR);
                         appendExpr(&iffalse, *getExpr(exprI, 3));
-                        lineValue = execExprList(&iffalse, NULL, 0, *currentStack, NULL);
+                        lineValue = execExprList(&iffalse, NULL, 0, currentStack, NULL);
                     }
                 }
                 lineValue = initValue();
@@ -315,8 +318,8 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
             else if (strcmp(first->atom, "while") == 0) {
                 expr iftrue = initExpr(SEXPR);
                 appendExpr(&iftrue, *getExpr(exprI, 2));
-                while (execute(getExpr(exprI, 1), *currentStack).Gen.Integer != 0 || execute(getExpr(exprI, 1), *currentStack).Gen.Float != 0.0) {
-                    lineValue = execExprList(&iftrue, NULL, 0, *currentStack, NULL);
+                while (execute(getExpr(exprI, 1), currentStack).Gen.Integer != 0 || execute(getExpr(exprI, 1), currentStack).Gen.Float != 0.0) {
+                    lineValue = execExprList(&iftrue, NULL, 0, currentStack, NULL);
                 }
             }
             else if (strcmp(first->atom, "do") == 0) {
@@ -324,7 +327,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                 for (int j = 1; j < exprI->length; ++j) {
                     appendExpr(&toDo, *getExpr(exprI, j));
                 }
-                lineValue = execExprList(&toDo, NULL, 0, *currentStack, NULL);
+                lineValue = execExprList(&toDo, NULL, 0, currentStack, NULL);
             }
             else if (strcmp(first->atom, "library") == 0) {
                 FILE *stream = fopen(getExpr(exprI, 1)->atom, "r");
@@ -332,6 +335,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                     printf("library: Error: no such file.\n");
                     exit(-1);
                 }
+
                 char *buffer = NULL;
                 size_t len = 0;
                 ssize_t bytes_read = getdelim(&buffer, &len, -1, stream);
@@ -342,23 +346,19 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                 map *libSymbols = (map *) malloc(sizeof(map));
                 execExprList(&libModule, NULL, 0, mainScopes, libSymbols);
                 variable thisLibrary = initVariable();
-                int libNameLength = getPrefix(getExpr(exprI, 1)->atom); // Gets everything before any file extension
-                if (libNameLength == 0) {
-                    libNameLength = strlen(getExpr(exprI, 1)->atom);
-                }
+                char *libName = getPrefix(getExpr(exprI, 1)->atom); // Gets everything before any file extension
+
                 if (exprI->length == 3) { // Allows declaration of a library with alternate name.
                     char *libAsName = getExpr(exprI, 2)->atom;
                     thisLibrary.name = (char *) malloc((strlen(libAsName) + 1) * sizeof(char));
-                    memcpy(thisLibrary.name, libAsName, strlen(libAsName));
+                    strcpy(thisLibrary.name, libAsName);
                 }
                 else {
-                    thisLibrary.name = (char *) malloc((libNameLength + 1) * sizeof(char));
-                    thisLibrary.name[libNameLength] = '\0';
-                    memcpy(thisLibrary.name, getExpr(exprI, 1)->atom, libNameLength);
+                    thisLibrary.name = libName;
                 }
-                printf("Library name: %s.\n", thisLibrary.name);
+
                 thisLibrary.Var.Library = libSymbols;
-                newVariable(currentStack->stack, thisLibrary);
+                newVariable(currentStack.stack, thisLibrary);
             }
             else if (strcmp(first->atom, "include") == 0) {
                 FILE *stream = fopen(getExpr(exprI, 1)->atom, "r");
@@ -382,7 +382,7 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                         variable newItem = *(thisBucket.contents + k);
                         newItem.name = (char *) malloc(strlen((getExpr(exprI, 1)->atom) + 2 + strlen((thisBucket.contents + k)->name)) * sizeof(char));
                         sprintf(newItem.name, "%s", (thisBucket.contents + k)->name);
-                        newVariable(currentStack->stack, newItem);
+                        newVariable(currentStack.stack, newItem);
                     }
                 }
             }
@@ -395,31 +395,36 @@ value execExprList(expr *exprList, variable *arguments, int numberOfArguments, s
                 char *buffer = NULL;
                 size_t len = 0;
                 ssize_t bytes_read = getdelim(&buffer, &len, -1, stream);
-                macroArray *thisMacroArray = (macroArray *) malloc(sizeof(macroArray));
+                macroArray *thisMacroArray = newMacroArray();
                 int end = 0;
                 parse(buffer, strlen(buffer), MODULE, &end, thisMacroArray);
                 postParser(exprList, *thisMacroArray);
 
-                free(thisMacroArray);
+                macrosDelAll(thisMacroArray);
             }
             else {
-                lineValue = execute(exprI, *currentStack);
+                lineValue = execute(exprI, currentStack);
             }
         }
     }
+    
     if (ExportTo && exprList->label == MODULE) {
         *ExportTo = initMap();
-        for (int i = 0; i < currentStack->stack->totalBuckets; ++i) {
-            bucket thisBucket = *(currentStack->stack->Buckets + i);
+        for (int i = 0; i < currentStack.stack->totalBuckets; ++i) {
+            bucket thisBucket = *(currentStack.stack->Buckets + i);
             for (int j = 0; j < thisBucket.length; ++j) {
                 newVariable(ExportTo, *(thisBucket.contents + j));
             }
         }
     }
+
     // Free memory and then return value of last line.
     free(first);
     free(exprI);
-    free(currentStack);
+
+    // Delete contents of this scope.
+    delMapContents(currentStack.stack[0]);
+
     return lineValue;
 }
 

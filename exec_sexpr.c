@@ -298,6 +298,7 @@ value execSexpr(expr *Expression, scopes currentStack)
     else if (strcmp(first, "sprint") == 0) {
         value newString = initValue();
         newString.type = STRING;
+        newString.Gen.String = (char *) {'\0'};
         for (int i = 1; i < Expression->length; ++i) {
             value thisArg = execute(getExpr(Expression, i), currentStack);
             value thisStr = initValue();
@@ -317,13 +318,16 @@ value execSexpr(expr *Expression, scopes currentStack)
                 sprintf(thisStr.Gen.String, "%p", (void *) thisArg.Gen.LongInt);
             }
 
-            char *oldContents = newString.Gen.String;
-            newString.Gen.String = (char *) malloc((strlen(newString.Gen.String) + strlen(thisStr.Gen.String) + 1) * sizeof(char));
-            strcpy(newString.Gen.String, oldContents);
-            free(oldContents);
-            strcat(newString.Gen.String, thisStr.Gen.String);
+            int newLen = strlen(newString.Gen.String) + strlen(thisStr.Gen.String) + 1;
+            char *newstr = (char *) malloc(newLen * sizeof(char));
+            strcpy(newstr, newString.Gen.String);
+            free(newString.Gen.String);
+            strcat(newstr, thisStr.Gen.String);
             free(thisStr.Gen.String);
+
+            newString.Gen.String = newstr;
         }
+
         return newString;
     }
     else if (strcmp(first, "input") == 0) {
@@ -416,16 +420,13 @@ value execSexpr(expr *Expression, scopes currentStack)
         char *fullname = getExpr(Expression, 0)->atom;
         variable thisFunction;
         scopes funcScopes = initScopes();
-        int preLength = getPrefix(fullname);
-        if (preLength > 0) {
-            char *prefix = malloc(preLength * sizeof(char));
-            memcpy(prefix, fullname, preLength);
-            char *functionName = malloc((strlen(fullname) - preLength) * sizeof(char));
-            memcpy(functionName, fullname + preLength + 1, strlen(fullname) - preLength - 1);
+        
+        char *prefix = getPrefix(fullname);
+        if (prefix) {
+            char *functionName = fullname + strlen(prefix) + 1; // Skip lib name and dot
             thisFunction = *getVariableFromLibrary(getVariable(currentStack, prefix)->Var.Library, functionName);
             funcScopes = plusScope(currentStack, *(getVariable(currentStack, prefix)->Var.Library));
             free(prefix);
-            free(functionName);
         }
         else {
             thisFunction = *getVariable(currentStack, fullname);

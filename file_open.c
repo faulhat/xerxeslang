@@ -97,10 +97,8 @@ value readFromFile(value file, value n)
     fgets(buffer, n.Gen.Integer, file.Gen.filestream);
     value returnVal = initValue();
     returnVal.type = STRING;
-    returnVal.Gen.String = (char *) malloc((strlen(buffer) + 1) * sizeof(char));
-    strcpy(returnVal.Gen.String, buffer);
-    free(buffer);
-    
+    returnVal.Gen.String = buffer;
+
     return returnVal;
 }
 

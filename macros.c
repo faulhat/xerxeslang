@@ -83,11 +83,21 @@ expr replaceMacroInstances(expr *code, char *macroFind, int macroExprs, expr mac
     return newCode;
 }
 
+
+macroArray *newMacroArray()
+{
+    macroArray *array_p = (macroArray *) malloc(sizeof(macroArray));
+    array_p->macroNumber = 0;
+    array_p->Array = (macro_t *) malloc(0);
+
+    return array_p;
+}
+
 void appendMacroArray(macroArray *macros, macro_t newMacro)
 {
-    ++(macros->macroNumber);
+    macros->macroNumber++;
     macros->Array = (macro_t *) realloc(macros->Array, macros->macroNumber * sizeof(macro_t));
-    *(macros->Array + macros->macroNumber - 1) = newMacro;
+    macros->Array[macros->macroNumber - 1] = newMacro;
 }
 
 void postParser(expr *fullCode, macroArray macros)
@@ -99,6 +109,16 @@ void postParser(expr *fullCode, macroArray macros)
             *fullCode = replaceMacroInstances(fullCode, thisMacro.keyword, thisMacro.exprNumber, thisMacro.replacement, MODULE, &i);
         }
     }
+}
+
+void macrosDelAll(macroArray *toDel)
+{
+    for (int i = 0; i < toDel->macroNumber; i++) {
+        free(toDel->Array[i].keyword);
+    }
+
+    free(toDel->Array);
+    free(toDel);
 }
 
 

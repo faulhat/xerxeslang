@@ -65,7 +65,5 @@ void str_puts(smart_str_t *dst, const char *str)
 
 char *getContentsCpy(const smart_str_t *src)
 {
-    char *out = (char *) malloc((src->length + 1) * sizeof(char));
-    strcpy(out, src->contents);
-    return out;
+    return strdup(src->contents);
 }
